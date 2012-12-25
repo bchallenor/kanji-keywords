@@ -115,7 +115,7 @@ def run(col):
 
 
 a = QAction(mw)
-a.setText('Kanji Keywords')
+a.setText('Update Kanji Keyword Hints')
 mw.form.menuTools.addAction(a)
 mw.connect(a, SIGNAL('triggered()'), lambda: run(mw.col))
 
