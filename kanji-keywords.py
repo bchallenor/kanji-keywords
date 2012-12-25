@@ -59,7 +59,6 @@ def getKanjiToKeyword(col):
   models = col.models
 
   kanjiModel = getMatchingModel(models, KANJI_MODEL_NAME, [KANJI_FIELD_NAME, KEYWORD_FIELD_NAME])
-  kanjiModelId = kanjiModel['id']
 
   kanjiToKeyword = {}
 
