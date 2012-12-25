@@ -23,7 +23,7 @@ EXPRESSION_FIELD_NAME = 'Expression'
 KEYWORD_HINTS_FIELD_NAME = 'Keyword-Hints'
 
 
-def getMatchingModel(models, expectedModelName, expectedFieldNames):
+def getModel(models, expectedModelName, expectedFieldNames):
   model = models.byName(expectedModelName)
   if not model:
     raise Exception('Cannot find model "%s".' % (expectedModelName))
@@ -34,6 +34,11 @@ def getMatchingModel(models, expectedModelName, expectedFieldNames):
       raise Exception('Cannot find field "%s" on model "%s".' % (expectedFieldName, expectedModelName))
 
   return model
+
+
+def getNidsForModel(models, expectedModelName, expectedFieldNames):
+  model = getModel(models, expectedModelName, expectedFieldNames)
+  return models.nids(model)
 
 
 def matchModel(models, model, expectedModelName, expectedFieldNames):
@@ -56,17 +61,12 @@ def getNidsForMatchingModel(models, expectedModelName, expectedFieldNames):
 
 
 def getKanjiToKeyword(col):
-  models = col.models
-
-  kanjiModel = getMatchingModel(models, KANJI_MODEL_NAME, [KANJI_FIELD_NAME, KEYWORD_FIELD_NAME])
-
   kanjiToKeyword = {}
 
-  kanjiNoteIds = models.nids(kanjiModel)
-  for kanjiNoteId in kanjiNoteIds:
-    kanjiNote = col.getNote(kanjiNoteId)
-    kanji = kanjiNote[KANJI_FIELD_NAME]
-    keyword = kanjiNote[KEYWORD_FIELD_NAME]
+  for nid in getNidsForModel(col.models, KANJI_MODEL_NAME, [KANJI_FIELD_NAME, KEYWORD_FIELD_NAME]):
+    note = col.getNote(nid)
+    kanji = note[KANJI_FIELD_NAME]
+    keyword = note[KEYWORD_FIELD_NAME]
     kanjiToKeyword[kanji] = keyword
 
   return kanjiToKeyword
