@@ -88,9 +88,13 @@ def updateKeywordHints(col, kanjiToKeyword, nid):
 
   hintsHtml = ', '.join(hints)
 
-  if note[KEYWORD_HINTS_FIELD_NAME] != hintsHtml:
+  shouldUpdate = note[KEYWORD_HINTS_FIELD_NAME] != hintsHtml
+
+  if shouldUpdate:
     note[KEYWORD_HINTS_FIELD_NAME] = hintsHtml
     note.flush()
+
+  return shouldUpdate
 
 
 def run(col):
@@ -99,12 +103,15 @@ def run(col):
   #showInfo(str(kanjiToKeyword[u'家']))
 
   count = 0
+  updatedCount = 0
 
   for nid in getNidsForMatchingModel(col.models, JAPANESE_MODEL_NAME, [EXPRESSION_FIELD_NAME, KEYWORD_HINTS_FIELD_NAME]):
-    updateKeywordHints(col, kanjiToKeyword, nid)
+    updated = updateKeywordHints(col, kanjiToKeyword, nid)
+    if updated:
+      updatedCount += 1
     count += 1
 
-  showInfo('Updated %d notes' % (count))
+  showInfo('Updated %d/%d notes' % (updatedCount, count))
 
 
 a = QAction(mw)
