@@ -18,8 +18,11 @@ KANJI_MODEL_NAME = 'Kanji'
 KANJI_FIELD_NAME = 'Kanji'
 KEYWORD_FIELD_NAME = 'Keyword'
 
+JAPANESE_MODEL_NAME = 'Japanese'
+KEYWORD_HINTS_FIELD_NAME = 'Keyword-Hints'
 
-def getModel(models, expectedModelName, expectedFieldNames):
+
+def getMatchingModel(models, expectedModelName, expectedFieldNames):
   model = models.byName(expectedModelName)
   if not model:
     raise Exception('Cannot find model "%s".' % (expectedModelName))
@@ -32,11 +35,29 @@ def getModel(models, expectedModelName, expectedFieldNames):
   return model
 
 
-def run(col):
+def matchModel(models, model, expectedModelName, expectedFieldNames):
+  if expectedModelName not in model['name']:
+    return False
+
+  fieldNames = models.fieldNames(model)
+  for expectedFieldName in expectedFieldNames:
+    if not expectedFieldName in fieldNames:
+      return False
+
+  return True
+
+
+def getNidsForMatchingModel(models, expectedModelName, expectedFieldNames):
+  for model in models.all():
+    if matchModel(models, model, expectedModelName, expectedFieldNames):
+      for nid in models.nids(model):
+        yield nid
+
+
+def getKanjiToKeyword(col):
   models = col.models
 
-  kanjiModel = getModel(models, KANJI_MODEL_NAME, [KANJI_FIELD_NAME, KEYWORD_FIELD_NAME])
-
+  kanjiModel = getMatchingModel(models, KANJI_MODEL_NAME, [KANJI_FIELD_NAME, KEYWORD_FIELD_NAME])
   kanjiModelId = kanjiModel['id']
 
   kanjiToKeyword = {}
@@ -48,7 +69,30 @@ def run(col):
     keyword = kanjiNote[KEYWORD_FIELD_NAME]
     kanjiToKeyword[kanji] = keyword
 
-  showInfo(str(kanjiToKeyword[u'家']))
+  return kanjiToKeyword
+
+
+def updateKeywordHints(col, kanjiToKeyword, nid):
+  note = col.getNote(nid)
+
+  note[KEYWORD_HINTS_FIELD_NAME] = 'hints'
+
+  #note.flush()
+
+
+def run(col):
+  kanjiToKeyword = getKanjiToKeyword(col)
+
+  #showInfo(str(kanjiToKeyword[u'家']))
+
+  count = 0
+
+  for nid in getNidsForMatchingModel(col.models, JAPANESE_MODEL_NAME, [KEYWORD_HINTS_FIELD_NAME]):
+    updateKeywordHints(col, kanjiToKeyword, nid)
+    count += 1
+
+  showInfo('Updated %d notes' % (count))
+
 
 a = QAction(mw)
 a.setText('Kanji Keywords')
