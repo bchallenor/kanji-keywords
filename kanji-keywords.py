@@ -66,8 +66,8 @@ def getKanjiToKeyword(col):
   kanjiNoteIds = models.nids(kanjiModel)
   for kanjiNoteId in kanjiNoteIds:
     kanjiNote = col.getNote(kanjiNoteId)
-    kanji = unicode(kanjiNote[KANJI_FIELD_NAME])
-    keyword = unicode(kanjiNote[KEYWORD_FIELD_NAME])
+    kanji = kanjiNote[KANJI_FIELD_NAME]
+    keyword = kanjiNote[KEYWORD_FIELD_NAME]
     kanjiToKeyword[kanji] = keyword
 
   return kanjiToKeyword
@@ -79,7 +79,7 @@ def updateKeywordHints(col, kanjiToKeyword, nid):
   expr = note[EXPRESSION_FIELD_NAME]
   hints = []
 
-  for char in unicode(expr):
+  for char in expr:
     if char in kanjiToKeyword:
       kanji = char
       keyword = kanjiToKeyword[kanji]
