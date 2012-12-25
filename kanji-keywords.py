@@ -44,8 +44,8 @@ def run(col):
   kanjiNoteIds = models.nids(kanjiModel)
   for kanjiNoteId in kanjiNoteIds:
     kanjiNote = col.getNote(kanjiNoteId)
-    kanji = kanjiNote['Kanji']
-    keyword = kanjiNote['Keyword']
+    kanji = kanjiNote[KANJI_FIELD_NAME]
+    keyword = kanjiNote[KEYWORD_FIELD_NAME]
     kanjiToKeyword[kanji] = keyword
 
   showInfo(str(kanjiToKeyword[u'家']))
