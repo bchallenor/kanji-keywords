@@ -18,20 +18,26 @@ KANJI_MODEL_NAME = 'Kanji'
 KANJI_FIELD_NAME = 'Kanji'
 KEYWORD_FIELD_NAME = 'Keyword'
 
-def assertContainsField(models, model, fieldName):
-  modelFieldNames = models.fieldNames(model)
-  if fieldName not in modelFieldNames:
-    modelName = model['name']
-    raise Exception('Model %s must contain field %s' % (modelName, fieldName))
+
+def getModel(models, expectedModelName, expectedFieldNames):
+  model = models.byName(expectedModelName)
+  if not model:
+    raise Exception('Cannot find model "%s".' % (expectedModelName))
+
+  fieldNames = models.fieldNames(model)
+  for expectedFieldName in expectedFieldNames:
+    if not expectedFieldName in fieldNames:
+      raise Exception('Cannot find field "%s" on model "%s".' % (expectedFieldName, expectedModelName))
+
+  return model
+
 
 def run(col):
   models = col.models
 
-  kanjiModel = models.byName(KANJI_MODEL_NAME)
-  kanjiModelId = kanjiModel['id']
+  kanjiModel = getModel(models, KANJI_MODEL_NAME, [KANJI_FIELD_NAME, KEYWORD_FIELD_NAME])
 
-  assertContainsField(models, kanjiModel, KANJI_FIELD_NAME)
-  assertContainsField(models, kanjiModel, KEYWORD_FIELD_NAME)
+  kanjiModelId = kanjiModel['id']
 
   kanjiToKeyword = {}
 
