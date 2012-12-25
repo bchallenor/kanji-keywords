@@ -19,6 +19,7 @@ KANJI_FIELD_NAME = 'Kanji'
 KEYWORD_FIELD_NAME = 'Keyword'
 
 JAPANESE_MODEL_NAME = 'Japanese'
+EXPRESSION_FIELD_NAME = 'Expression'
 KEYWORD_HINTS_FIELD_NAME = 'Keyword-Hints'
 
 
@@ -65,8 +66,8 @@ def getKanjiToKeyword(col):
   kanjiNoteIds = models.nids(kanjiModel)
   for kanjiNoteId in kanjiNoteIds:
     kanjiNote = col.getNote(kanjiNoteId)
-    kanji = kanjiNote[KANJI_FIELD_NAME]
-    keyword = kanjiNote[KEYWORD_FIELD_NAME]
+    kanji = unicode(kanjiNote[KANJI_FIELD_NAME])
+    keyword = unicode(kanjiNote[KEYWORD_FIELD_NAME])
     kanjiToKeyword[kanji] = keyword
 
   return kanjiToKeyword
@@ -75,9 +76,21 @@ def getKanjiToKeyword(col):
 def updateKeywordHints(col, kanjiToKeyword, nid):
   note = col.getNote(nid)
 
-  note[KEYWORD_HINTS_FIELD_NAME] = 'hints'
+  expr = note[EXPRESSION_FIELD_NAME]
+  hints = []
 
-  #note.flush()
+  for char in unicode(expr):
+    if char in kanjiToKeyword:
+      kanji = char
+      keyword = kanjiToKeyword[kanji]
+      hint = '%s: %s' % (kanji, keyword)
+      hints.append(hint)
+
+  hintsHtml = ', '.join(hints)
+
+  if note[KEYWORD_HINTS_FIELD_NAME] != hintsHtml:
+    note[KEYWORD_HINTS_FIELD_NAME] = hintsHtml
+    note.flush()
 
 
 def run(col):
@@ -87,7 +100,7 @@ def run(col):
 
   count = 0
 
-  for nid in getNidsForMatchingModel(col.models, JAPANESE_MODEL_NAME, [KEYWORD_HINTS_FIELD_NAME]):
+  for nid in getNidsForMatchingModel(col.models, JAPANESE_MODEL_NAME, [EXPRESSION_FIELD_NAME, KEYWORD_HINTS_FIELD_NAME]):
     updateKeywordHints(col, kanjiToKeyword, nid)
     count += 1
 
